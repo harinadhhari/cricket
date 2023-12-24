@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract CricketScorer {
+    mapping(address => uint) private playerScores;
+    mapping(address => bool) private isPlayerPlaying;
+
+    event PlayerJoined(address player);
+    event RunsRecorded(address player, uint runs);
+    event PlayerLeft(address player);
+
+    modifier onlyPlaying() {
+        require(isPlayerPlaying[msg.sender], "Player is not part of the game");
+        _;
+    }
+
+    modifier notPlaying() {
+        require(!isPlayerPlaying[msg.sender], "Player is already part of the game");
+        _;
+    }
+
+    function joinGame() public notPlaying {
+        isPlayerPlaying[msg.sender] = true;
+        emit PlayerJoined(msg.sender);
+    }
+
+    function recordRuns(uint _runs) public onlyPlaying {
+        assert(_runs > 0 && _runs <= 1000);
+        playerScores[msg.sender] += _runs;
+        emit RunsRecorded(msg.sender, _runs);
+    }
+
+    function Performance_check() public view returns (string memory) {
+        uint playerScore = playerScores[msg.sender];
+        
+        if (playerScore >= 300) {
+            return "Outstanding Performance";
+        } else {
+            revert("Improvement Needed: Score should be at least 300");
+        }
+    }
+
+    function leaveGame() public onlyPlaying {
+        isPlayerPlaying[msg.sender] = false;
+        emit PlayerLeft(msg.sender);
+    }
+}
